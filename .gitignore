@@ -207,4 +207,4 @@ marimo/_lsp/
 __marimo__/
 
 #Stock data
-Ticker_Data/*.csv
+*.csv
