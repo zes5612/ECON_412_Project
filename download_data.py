@@ -21,5 +21,5 @@ def getAllTickers():
     file_path = os.path.join(DATA_PATH, "company_list.csv")
     df = pl.read_csv(file_path)
 
-    company_list = df["Symbol"].to_list() #Still includes WBA which turned private recenetly, manually deleted file
+    company_list = df["Symbol"].to_list()
     return company_list
