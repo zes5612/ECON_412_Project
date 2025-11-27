@@ -23,7 +23,7 @@ def join_and_save():
         print(f"Saved {ticker} to {filename}")
     
     
-
+    
 def load_tickers():
     dfs = []
 
