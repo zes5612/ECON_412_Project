@@ -19,11 +19,11 @@ def join_and_save():
         
         filename = os.path.join(master_path, f"{ticker}.csv")
         
-        df.to_csv(filename)
+        df.write_csv(filename)
         print(f"Saved {ticker} to {filename}")
     
     
-    
+
 def load_tickers():
     dfs = []
 
