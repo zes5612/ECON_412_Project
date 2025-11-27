@@ -1,0 +1,68 @@
+import os, glob
+import polars as pl
+
+DATA_PATH = "Data/"
+TICKER_DATA_PATH = glob.glob("Data/Ticker_Data/*.csv")
+
+
+def join_and_save():
+    ticker_dfs = load_tickers()
+    info = company_info()
+    
+    master_path = os.path.join(DATA_PATH, "Master_Data")
+    os.makedirs(master_path, exist_ok=True)
+    
+
+    for df in ticker_dfs:
+        ticker = df['Ticker'].first()
+        df = df.join(info, on="Ticker", how="left")
+        
+        filename = os.path.join(master_path, f"{ticker}.csv")
+        
+        df.write_csv(filename)
+        print(f"Saved {ticker} to {filename}")
+    
+    
+
+def load_tickers():
+    dfs = []
+
+    for path in TICKER_DATA_PATH:
+        ticker = os.path.basename(path).removesuffix(".csv")
+
+        df = pl.read_csv(path, skip_rows=2, has_header=True, new_columns=["Date", "Close", "High", "Low", "Open", "Volume"])
+        
+        if df.height == 0:
+            print(f"{ticker} CSV is empty, skipping")
+            continue
+        
+        df = df.with_columns(pl.col("Date").str.strptime(pl.Date, "%Y-%m-%d"))
+        df = df.with_columns(pl.lit(ticker).alias("Ticker"))
+        
+        try:
+            validate_df(df)
+        except Exception as e:
+            print(f"{ticker} is not valid, skipping: {e}")
+            continue
+
+        
+        dfs.append(df)
+        print(f"Loaded {ticker} ({len(dfs) + 1}/{len(TICKER_DATA_PATH)})")
+
+    return dfs
+
+
+def validate_df(df):
+    assert set(["Date", "Open", "High", "Low", "Close", "Volume", "Ticker"]).issubset(df.columns), "Missing required columns"
+    assert df["Ticker"].n_unique() >= 1, "Ticker column has no values"
+    assert df["Date"].is_sorted(), "Date column is not sorted"
+
+    total_nulls = df.null_count().to_numpy().sum()
+    assert total_nulls == 0, f"Found {total_nulls} null values"
+
+
+def company_info():
+    info_path = os.path.join(DATA_PATH, "company_list.csv")
+    info = pl.read_csv(info_path)
+    info = info.select(pl.col("Symbol").alias("Ticker"), pl.col("GICS Sector").alias("Sector"), pl.col("GICS Sub-Industry").alias("Sub-Industry"))
+    return info
