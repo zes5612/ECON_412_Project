@@ -1,4 +1,3 @@
-import os
 import polars as pl
 from pathlib import Path
 
@@ -11,15 +10,19 @@ def join_and_save():
     ticker_dfs = load_tickers()
     info = company_info()
     
-    master_path = os.path.join(DATA_PATH, "Master_Data")
-    os.makedirs(master_path, exist_ok=True)
+    # master_path = os.path.join(DATA_PATH, "Master_Data")
+    # os.makedirs(master_path, exist_ok=True)
+
+    master_path = Path(DATA_PATH) / "Master_Data"
+    master_path.mkdir(parents=True, exist_ok=True)
+    (master_path / ".gitkeep").touch(exist_ok=True)
     
 
     for df in ticker_dfs:
         ticker = df['Ticker'].first()
         df = df.join(info, on="Ticker", how="left")
         
-        filename = os.path.join(master_path, f"{ticker}.csv")
+        filename = Path(master_path) / f"{ticker}.csv"
         
         df.write_csv(filename)
         print(f"Saved {ticker} to {filename}")
@@ -29,7 +32,7 @@ def load_tickers():
     dfs = []
 
     for path in TICKER_DATA_FILES:
-        ticker = os.path.basename(path).removesuffix(".csv")
+        ticker = path.stem
 
         df = pl.read_csv(path, skip_rows=2, has_header=True, new_columns=["Date", "Close", "High", "Low", "Open", "Volume"])
         
@@ -61,7 +64,7 @@ def validate_df(df):
 
 
 def company_info():
-    info_path = os.path.join(DATA_PATH, "company_list.csv")
+    info_path = Path(DATA_PATH) / "company_list.csv"
     info = pl.read_csv(info_path)
     info = info.select(pl.col("Symbol").alias("Ticker"), pl.col("GICS Sector").alias("Sector"), pl.col("GICS Sub-Industry").alias("Sub-Industry"))
     return info
