@@ -25,7 +25,6 @@ def join_and_save():
         print(f"Saved {ticker} to {filename}")
     
     
-
 def load_tickers():
     dfs = []
 
@@ -45,7 +44,6 @@ def load_tickers():
         except Exception as e:
             print(f"{ticker} is not valid, skipping: {e}")
             continue
-
         
         dfs.append(df)
         print(f"Loaded {ticker} ({len(dfs) + 1}/{len(TICKER_DATA_PATH)})")
