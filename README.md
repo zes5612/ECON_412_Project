@@ -1,5 +1,5 @@
 # ECON_412_Project
-Analysis of S&amp;P 500 historical data for RIT's ECON 412 Data Wrangling & Exploration Class
+Analysis of S&amp;P 500 historical data for RIT's ECON-412 Data Wrangling & Exploration Class
 
 Note: WBA is no longer a public company, but the ticker was still listed at the time of download.
 You will need to manually delete 'WBA.csv'.
