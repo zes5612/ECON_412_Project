@@ -1,8 +1,10 @@
-import os, glob
+import os
 import polars as pl
+from pathlib import Path
 
 DATA_PATH = "Data/"
-TICKER_DATA_PATH = glob.glob("Data/Ticker_Data/*.csv")
+TICKER_DATA_PATH = "Data/Ticker_Data/"
+TICKER_DATA_FILES= list(Path(TICKER_DATA_PATH).glob("*.csv"))
 
 
 def join_and_save():
@@ -27,7 +29,7 @@ def join_and_save():
 def load_tickers():
     dfs = []
 
-    for path in TICKER_DATA_PATH:
+    for path in TICKER_DATA_FILES:
         ticker = os.path.basename(path).removesuffix(".csv")
 
         df = pl.read_csv(path, skip_rows=2, has_header=True, new_columns=["Date", "Close", "High", "Low", "Open", "Volume"])
