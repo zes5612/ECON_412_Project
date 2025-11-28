@@ -34,7 +34,12 @@ def load_tickers():
     for path in TICKER_DATA_FILES:
         ticker = path.stem
 
-        df = pl.read_csv(path, skip_rows=2, has_header=True, new_columns=["Date", "Close", "High", "Low", "Open", "Volume"])
+        df = pl.read_csv(
+            path,
+            skip_rows=2,
+            has_header=True,
+            new_columns=["Date", "Close", "High", "Low", "Open", "Volume"]
+            )
         
         if df.height == 0:
             print(f"{ticker} CSV is empty, skipping")
@@ -66,5 +71,11 @@ def validate_df(df):
 def company_info():
     info_path = Path(DATA_PATH) / "company_list.csv"
     info = pl.read_csv(info_path)
-    info = info.select(pl.col("Symbol").alias("Ticker"), pl.col("GICS Sector").alias("Sector"), pl.col("GICS Sub-Industry").alias("Sub-Industry"))
+    
+    info = info.select(
+        pl.col("Symbol").alias("Ticker"),
+        pl.col("GICS Sector").alias("Sector"),
+        pl.col("GICS Sub-Industry").alias("Sub-Industry")
+        )
+    
     return info
