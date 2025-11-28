@@ -35,17 +35,13 @@ def add_columns(master_df):
                                        .fill_null(0).alias("Daily Return"))
     
     master_df = master_df.with_columns(pl.col("Date").dt.year().alias("Year"))
-<<<<<<< HEAD
-=======
-    return master_df
->>>>>>> main
-    
 
+    return master_df
+
+    
 def master_df():
     dfs = [pl.read_csv(file) for file in MASTER_DATA_FILES]
     master_df = pl.concat(dfs)
     master_df = master_df.with_columns(pl.col("Date").str.strptime(pl.Date, "%Y-%m-%d"))
-<<<<<<< HEAD
-=======
+
     return master_df
->>>>>>> main
