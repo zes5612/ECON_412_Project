@@ -36,7 +36,6 @@ def load_tickers():
             print(f"{ticker} CSV is empty, skipping")
             continue
         
-        df = df.with_columns(pl.col("Date").str.strptime(pl.Date, "%Y-%m-%d"))
         df = df.with_columns(pl.lit(ticker).alias("Ticker"))
         
         try:
