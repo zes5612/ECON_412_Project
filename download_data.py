@@ -23,3 +23,6 @@ def getAllTickers():
 
     company_list = df["Symbol"].to_list()
     return company_list
+
+if __name__ == "__main__":
+    downloadData()
