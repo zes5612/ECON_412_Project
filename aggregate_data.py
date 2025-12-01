@@ -21,10 +21,13 @@ def compounded_yearly_returns(master_df, col):
     yearly_returns =(
         master_df
         .group_by(["Year", col])
-        .agg([((1 + pl.col("Daily Return")).cum_prod().last() - 1)
+        .agg([((1 + pl.col("Daily Return")).cum_prod().last() - 1) 
               .alias("Compounded Return")])
               .drop_nulls().sort(["Year", col])
         )
+        #Add 1 to multiply growth factors instead of daily returns (1.05, 1.02, etc instead of 0.05, 0.02, etc)
+        #After finding cumulative product, subtract 1 to return back to return instead of growth
+    
 
     return yearly_returns
 
