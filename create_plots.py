@@ -80,7 +80,7 @@ def yearly_bar_chart(df, col):
 
         ax.set(
             ylabel="Compounded Yearly Return",
-            title=f"Compunded Return of the\nS&P 500 by Sector, {year}"
+            title=f"Compunded Return of the\nS&P 500 by {col}, {year}"
         )
 
         plt.tight_layout()
@@ -121,6 +121,45 @@ def average_bar_chart(df, col):
     plt.tight_layout()
     fig.savefig(f'{col}_compounded_yearly_bar.pdf')
 
+def create_scatter(df, col, correlate):
+    sectors = df[col].unique().to_list()
+    colors = plt.cm.tab20(range(len(sectors)))  #Gets up to 20 distinct colors
+    
+    fig, ax = plt.subplots(figsize=(12, 7))
+
+    legend_labels = []
+
+    for sector, color in zip(sectors, colors):
+        df_sector = df.filter(pl.col(col) == sector)
+
+        x = df_sector[correlate].to_numpy()
+        y = df_sector["Compounded Return"].to_numpy()
+
+        ax.scatter(x, y, color=color, alpha=0.7)
+
+        if len(df_sector) > 1:
+                corr = float(df_sector.select(
+                pl.corr(correlate, "Compounded Return")
+                ).item())
+        else:
+                corr = float("nan")
+
+        legend_labels.append(f"{sector}  (r={corr:.2f})")
+
+        ax.set_xlabel(correlate)
+        ax.set_ylabel("Compounded Return")
+        ax.set_title(f"{correlate} vs Compounded Return by {col}\nColored by {col}")
+
+        # Build legend
+        ax.legend(
+                legend_labels,
+                title=f"{correlate}-Growth Correlations",
+                loc="upper right",
+                fontsize=9
+        )
+
+        plt.tight_layout()
+    fig.savefig(f'{col}_{correlate}_return_scatter.pdf')
 
 def create_graphs(col):
     df = process_agg_data(col)
@@ -131,6 +170,8 @@ def create_graphs(col):
     line_graph(df, col)
     #yearly_bar_chart(df, col)
     average_bar_chart(df, col)
+    create_scatter(df, col, "Total Volume")
+    create_scatter(df, col, "Annual Volatility")
 
 if __name__ == "__main__":
     create_graphs("Sub-Industry")

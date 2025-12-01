@@ -20,8 +20,9 @@ def save_agg(col):
 
 
 def compounded_yearly_returns(master_df, col):
-    daily_returns = master_df.group_by(["Date", col]).agg(
-        pl.col("Daily Return").mean().alias(col + " Daily Return")
+    daily_returns = master_df.group_by(["Date", col]).agg([
+        pl.col("Daily Return").mean().alias(col + " Daily Return"),
+        pl.col("Volume").mean().alias(col + " Daily Volume")]
     )
     daily_returns = daily_returns.with_columns(
         pl.col("Date").dt.year().alias("Year") 
@@ -30,7 +31,9 @@ def compounded_yearly_returns(master_df, col):
     #Add 1 to multiply growth factors instead of daily returns (1.05, 1.02, etc instead of 0.05, 0.02, etc)
     #After finding cumulative product, subtract 1 to return back to return instead of growth
     yearly_returns = daily_returns.group_by(["Year", col]).agg([
-        ((1 + pl.col(col + " Daily Return")).cum_prod().last() - 1).alias("Compounded Return")
+        ((1 + pl.col(col + " Daily Return")).cum_prod().last() - 1).alias("Compounded Return"),
+        pl.col(col + " Daily Volume").sum().alias("Total Volume"),
+        (pl.col(col + " Daily Return").std() * (252 ** 0.5)).alias("Annual Volatility")
     ]).drop_nulls().sort(["Year", col])
     
     return yearly_returns

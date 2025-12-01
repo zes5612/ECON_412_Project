@@ -27,8 +27,8 @@ def getAllTickers():
     return company_list
 
 if __name__ == "__main__":
-    downloadData()
-    join_and_save()
+    #downloadData()
+    #join_and_save()
     save_agg("Sub-Industry")
     save_agg("Sector")    
 
