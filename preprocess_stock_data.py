@@ -5,7 +5,7 @@ DATA_PATH = "Data/"
 TICKER_DATA_PATH = "Data/Ticker_Data/"
 TICKER_DATA_FILES= list(Path(TICKER_DATA_PATH).glob("*.csv"))
 
-
+#Loads in every properly formatted csv then adds the company info to each row
 def join_and_save():
     ticker_dfs = load_tickers()
     info = company_info()
@@ -27,7 +27,7 @@ def join_and_save():
         df.write_csv(filename)
         print(f"Saved {ticker} to {filename}")
     
-    
+#Loads in a csv, validates it, and renames some of the columns to be consistent with terminology
 def load_tickers():
     dfs = []
 
@@ -39,7 +39,7 @@ def load_tickers():
             skip_rows=2,
             has_header=True,
             new_columns=["Date", "Close", "High", "Low", "Open", "Volume"]
-            )
+        )
         
         if df.height == 0:
             print(f"{ticker} CSV is empty, skipping")
@@ -58,7 +58,7 @@ def load_tickers():
 
     return dfs
 
-
+#Double checks that all necessary columns are in a datafrane
 def validate_df(df):
     assert set(["Date", "Open", "High", "Low", "Close", "Volume", "Ticker"]).issubset(df.columns), "Missing required columns"
     assert df["Ticker"].n_unique() >= 1, "Ticker column has no values"
@@ -67,7 +67,7 @@ def validate_df(df):
     total_nulls = df.null_count().to_numpy().sum()
     assert total_nulls == 0, f"Found {total_nulls} null values"
 
-
+#Renames columns in the company list
 def company_info():
     info_path = Path(DATA_PATH) / "company_list.csv"
     info = pl.read_csv(info_path)
@@ -76,6 +76,9 @@ def company_info():
         pl.col("Symbol").alias("Ticker"),
         pl.col("GICS Sector").alias("Sector"),
         pl.col("GICS Sub-Industry").alias("Sub-Industry")
-        )
+    )
     
     return info
+
+if __name__ == "__main__":
+    join_and_save()
