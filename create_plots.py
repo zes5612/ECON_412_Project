@@ -21,9 +21,18 @@ def process_agg_data(col):
     return df
 
 def filter_top_bot(df, k):
-    top_5 = df.top_k(k, by="Average return")
-    bot_5 = df.bottom_k(k, by="Average return")
-    return pl.concat([k, bot_5])
+    yearly_average = (
+        df.group_by(["Sub-Industry"])
+        .agg(
+            pl.col("Compounded Return").mean().alias("Average return")
+        )
+    )
+    
+    top_5 = yearly_average.top_k(k, by="Average return")
+    bot_5 = yearly_average.bottom_k(k, by="Average return")
+    top_bot_5 = pl.concat([top_5, bot_5])["Sub-Industry"].to_list()
+
+    return df.filter(pl.col("Sub-Industry").is_in(top_bot_5))
 
 def line_graph(df, col):
     fig, ax = plt.subplots(figsize=(20, 10))
@@ -61,7 +70,7 @@ def yearly_bar_chart(df, col):
 
         ax.bar(
             wrapped_labels,
-            compound,
+            compound.sort(),
             color=COLORS
         )
 
@@ -91,7 +100,7 @@ def average_bar_chart(df, col):
 
     ax.bar(
         wrapped_labels,
-        average_returns["Average return"],
+        average_returns["Average return"].sort(),
         color=COLORS
     )
 
@@ -117,15 +126,14 @@ def create_graphs(col):
     df = process_agg_data(col)
 
     if(col == "Sub-Industry"):
-        #df = filter_top_bot(df, 5)
-        pass
+        df = filter_top_bot(df, 5)
     
     line_graph(df, col)
-    yearly_bar_chart(df, col)
+    #yearly_bar_chart(df, col)
     average_bar_chart(df, col)
 
 if __name__ == "__main__":
-    create_graphs("Sector")
+    create_graphs("Sub-Industry")
 
     
    

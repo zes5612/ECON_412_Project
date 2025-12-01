@@ -3,6 +3,7 @@ import polars as pl
 import os
 from preprocess_stock_data import join_and_save
 from aggregate_data import save_agg
+from create_plots import create_graphs
 
 DATA_PATH = "Data/"
 
@@ -30,3 +31,6 @@ if __name__ == "__main__":
     join_and_save()
     save_agg("Sub-Industry")
     save_agg("Sector")    
+
+    create_graphs("Sector")
+    create_graphs("Sub-Industry") 
