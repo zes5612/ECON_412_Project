@@ -27,6 +27,10 @@ def filter_top_bot(df, k):
             pl.col("Compounded Return").mean().alias("Average return")
         )
     )
+
+    df = df.with_columns(
+         (((1 + pl.col("Compounded Return")) ** 10) - 1).alias("Total Return")
+    )
     
     top_5 = yearly_average.top_k(k, by="Average return")
     bot_5 = yearly_average.bottom_k(k, by="Average return")
@@ -123,6 +127,38 @@ def average_bar_chart(df, col):
     fig.savefig(f'{col}_compounded_yearly_bar.png')
     plt.close("all")
 
+def compound_bar_chart(df):
+    df = df.group_by("Sub-Industry").agg(
+            ((1 + pl.col("Compounded Return")).product() - 1)
+            .alias("Total Return_10yr")
+        )
+    
+    top_5 = df.top_k(5, by="Total Return_10yr")
+    bot_5 = df.bottom_k(5, by="Total Return_10yr")
+    top_bot_5 = pl.concat([top_5, bot_5])
+
+    fig, ax = plt.subplots(figsize=(13, 8))
+
+    wrapped_labels = [ label.replace(' ', '\n') for label in top_bot_5["Sub-Industry"] ] #Helps formatting
+
+    ax.bar(
+        wrapped_labels,
+        top_bot_5["Total Return_10yr"],
+        color=plt.cm.tab20(range(len(wrapped_labels)))
+    )
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_position(('data', 0))
+
+    ax.set(xlabel="Sub-Industry",
+            ylabel="Compounded Yearly Returns",
+            title="Compunded Yearly Returns of the\nS&P 500 by Sub-Industry, 10 Years")
+
+    plt.tight_layout()
+    fig.savefig(f'total_return.png')
+    plt.close("all")
+
 def create_scatter(df, col, correlate):
     sectors = df[col].unique().to_list()
     colors = plt.cm.tab20(range(len(sectors)))  #Gets distinct colors for each secror
@@ -168,13 +204,14 @@ def create_graphs(col):
     df = process_agg_data(col)
 
     if(col == "Sub-Industry"):
+        compound_bar_chart(df)
         df = filter_top_bot(df, 5)
     
-    line_graph(df, col)
-    yearly_bar_chart(df, col)
-    average_bar_chart(df, col)
-    create_scatter(df, col, "Total Volume")
-    create_scatter(df, col, "Annual Volatility")
+    # line_graph(df, col)
+    # yearly_bar_chart(df, col)
+    #average_bar_chart(df, col)
+    # create_scatter(df, col, "Total Volume")
+    # create_scatter(df, col, "Annual Volatility")
 
 if __name__ == "__main__":
     create_graphs("Sub-Industry")
