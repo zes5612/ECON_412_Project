@@ -53,25 +53,25 @@ def line_graph(df, col):
         title=f"Compounded Yearly Returns of the\nS&P 500 by {col}, 10 Years"
     )
 
-    fig.savefig(f'{col}_compounded_yearly_line.pdf')
+    fig.savefig(f'{col}_compounded_yearly_line.png')
+    plt.close("all")
 
 def yearly_bar_chart(df, col):
     
-    print(df["Year"])
     unique_years = df["Year"].unique().to_list()
 
     for year in unique_years:
-        df_year = df.filter(pl.col("Year") == year)
-        wrapped_labels = [ label.replace(' ', '\n') for label in df_year[col] ] #Helps formatting
+        df_year = df.filter(pl.col("Year") == year).sort("Compounded Return")
 
+        wrapped_labels = [ label.replace(' ', '\n') for label in df_year[col] ] #Helps formatting
         compound = df_year["Compounded Return"]
         
         fig, ax = plt.subplots(figsize=(13, 8))
 
         ax.bar(
             wrapped_labels,
-            compound.sort(),
-            color=COLORS
+            compound,
+            color = plt.cm.tab20(range(len(wrapped_labels)))
         )
 
         ax.spines['top'].set_visible(False)
@@ -85,7 +85,8 @@ def yearly_bar_chart(df, col):
 
         plt.tight_layout()
 
-        fig.savefig(f'{col}_{year}_compounded_return.pdf')
+        fig.savefig(f'{col}_{year}_compounded_return.png')
+        plt.close("all")
 
 def average_bar_chart(df, col):
     average_returns = (
@@ -93,15 +94,15 @@ def average_bar_chart(df, col):
         .agg(
             pl.col("Compounded Return").mean().alias("Average return")
         )
-    )
+    ).sort("Average return")
     wrapped_labels = [ label.replace(' ', '\n') for label in average_returns[col] ] #Helps formatting
 
     fig, ax = plt.subplots(figsize=(13, 8))
 
     ax.bar(
         wrapped_labels,
-        average_returns["Average return"].sort(),
-        color=COLORS
+        average_returns["Average return"],
+        color = plt.cm.tab20(range(len(wrapped_labels)))
     )
 
     avg = average_returns["Average return"].mean()
@@ -119,11 +120,12 @@ def average_bar_chart(df, col):
             title=f"Average Compunded Yearly Returns of the\nS&P 500 by {col}, 10 Years")
 
     plt.tight_layout()
-    fig.savefig(f'{col}_compounded_yearly_bar.pdf')
+    fig.savefig(f'{col}_compounded_yearly_bar.png')
+    plt.close("all")
 
 def create_scatter(df, col, correlate):
     sectors = df[col].unique().to_list()
-    colors = plt.cm.tab20(range(len(sectors)))  #Gets up to 20 distinct colors
+    colors = plt.cm.tab20(range(len(sectors)))  #Gets distinct colors for each secror
     
     fig, ax = plt.subplots(figsize=(12, 7))
 
@@ -159,7 +161,8 @@ def create_scatter(df, col, correlate):
         )
 
         plt.tight_layout()
-    fig.savefig(f'{col}_{correlate}_return_scatter.pdf')
+    fig.savefig(f'{col}_{correlate}_return_scatter.png')
+    plt.close("all")
 
 def create_graphs(col):
     df = process_agg_data(col)
@@ -168,7 +171,7 @@ def create_graphs(col):
         df = filter_top_bot(df, 5)
     
     line_graph(df, col)
-    #yearly_bar_chart(df, col)
+    yearly_bar_chart(df, col)
     average_bar_chart(df, col)
     create_scatter(df, col, "Total Volume")
     create_scatter(df, col, "Annual Volatility")
