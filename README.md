@@ -7,3 +7,5 @@ polars,
 matplotlib,
 
 You just simply need to run 'entire_process.py', and all of the CSVs and graphs will be generated.
+Note: Due to the number and size of CSV files, they have been hidden in this repository, but you will be able to view
+all of them once you run the file on your own machine.
